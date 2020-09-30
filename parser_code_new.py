@@ -12,54 +12,53 @@ import numpy as np
 # ПОДРОБНОЕ ОПИСАНИЕ КОДА В ФАЙЛЕ ipynb
 
 # Страница ЦИАНа по которой будем ходить - собирать квартиры
-# p = число - номер страницы (поставим туда {}, чтоб подставлять туда разные страницы)
-# district = 'http://www.cian.ru/cat.php?deal_type=sale&district%5B0%5D=13&district%5B1%5D=14&district%5B2%5D=15&\
-# district%5B3%5D=16&district%5B4%5D=17&district%5B5%5D=18&district%5B6%5D=19&district%5B7%5D=20&district%5B8%5D=21\
-# &district%5B9%5D=22&engine_version=2&offer_type=flat&p={}&room1=1&room2=1&room3=1&room4=1&room5=1&room6=1'
+# p = число - номер страницы (поставим туда {},
+# чтоб подставлять туда разные страницы)
+
 
 district = "https://www.cian.ru/cat.php?deal_type=sale&district%5B0%5D=13&" + \
     "district%5B1%5D=14&district%5B2%5D=15&district%5B3%5D=17&" + \
     "district%5B4%5D=18&district%5B5%5D=19&district%5B6%5D=20&" + \
     "district%5B7%5D=22&engine_version=2&offer_type=flat&" + \
-    "p=2&" + \
+    "p={}&" + \
     "room1=1&room2=1&room3=1&room4=1&room5=1"
+
+
+class FlatInfo:
+    def __init__(self, link):
+        self.link = link
 
 
 # Функция для сбора квартир с одной страницы циана
 def page_grabber(page):
-    flats_links = [] # список с ссылками с одной страницы поиска
+    # список с ссылками с одной страницы поиска
+    flats_links = []
     p = len(page)
     for i in range(p):
         # один элемент - ссылка (то есть атрибут href тега div)
         flats_links.append(page[i].attrs['href'])
     return(flats_links)
 
-links = [] # Список, который заполним всеми квартирами
 
-for i in range(1,31):
+# Список, который заполним всеми квартирами
+links = []
+flat_list = []
+
+for i in range(1, 1):
     # Получаем нужную страницу
     search_page = requests.get(district.format(i))
     soup = BeautifulSoup(search_page.content, 'html.parser')
     flats = soup.find_all(class_="_93444fe79c--card--_yguQ")
 
-    search_page = search_page.text
-    search_page = BeautifulSoup(search_page, 'lxml')
+    for flat in flats:
+        for link in flat.find_all('a'):
+            print (link.get('href'))
 
-    # Внутри нужной страницы добираемся до таблицы с квартирами
-    flats = search_page.html.body.findAll("div", {"class": "_93444fe79c--card--_yguQ"})
-    flats = flats[0].findAll('div', attrs = {'class':'serp-list'})
-    
-    # В этой переменной будет лежать нужный кусок страницы (в каждой итерации новая страница)
-    flats_cian = flats[0].findAll('div',\
-              attrs = {'ng-class':"{'serp-item_removed': offer.remove.state, 'serp-item_popup-opened': isPopupOpen}"})
-    
     # Берем ссылки с текущей страницы и кладем в наш общий список ссылок
-    links = links + page_grabber(flats_cian)
-    
-    # Каждую итерацию проверяем, что все нормально работает 
-    print('The page number {} wroks well\nIts requests.ok is {}'.format(i, requests.get(district.format(i)).ok))
+    #links = links + page_grabber(flats)
 
-
+    # Каждую итерацию проверяем, что все нормально работает
+    #print('The page number {} wroks well\nIts requests.ok is {}'.format(i, requests.get(district.format(i)).ok))
 
 
 # Функции для сбора данных по одной квартире
